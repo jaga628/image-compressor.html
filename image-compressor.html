@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>मेरा पहला Image Compressor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #ff2d55;
+        }
+        #uploadBox {
+            border: 2px dashed #ff2d55;
+            padding: 30px;
+            margin: 20px auto;
+            max-width: 500px;
+            background: white;
+            border-radius: 10px;
+        }
+        #imagePreview {
+            max-width: 300px;
+            margin: 20px auto;
+            display: none;
+        }
+        button {
+            background: #ff2d55;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .file-info {
+            margin: 15px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>मेरा Image Compressor</h1>
+    
+    <div id="uploadBox">
+        <p>यहां इमेज ड्रॉप करें या क्लिक करें</p>
+        <input type="file" id="imageInput" accept="image/*">
+    </div>
+    
+    <div id="controls" style="display:none;">
+        <label for="quality">क्वालिटी: </label>
+        <input type="range" id="quality" min="10" max="100" value="70">
+        <span id="qualityValue">70%</span>
+        
+        <button id="compressBtn">इमेज कंप्रेस करें</button>
+    </div>
+    
+    <div id="result" style="display:none;">
+        <img id="imagePreview" src="" alt="कंप्रेस्ड इमेज">
+        <div class="file-info">
+            <p>ओरिजिनल साइज: <span id="originalSize">0</span> KB</p>
+            <p>नई साइज: <span id="newSize">0</span> KB</p>
+        </div>
+        <button id="downloadBtn">डाउनलोड करें</button>
+    </div>
+
+    <script>
+        // इमेज सेलेक्ट करने पर
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                document.getElementById('controls').style.display = 'block';
+            }
+        });
+        
+        // क्वालिटी स्लाइडर
+        document.getElementById('quality').addEventListener('input', function() {
+            document.getElementById('qualityValue').textContent = this.value + '%';
+        });
+        
+        // कंप्रेस बटन
+        document.getElementById('compressBtn').addEventListener('click', function() {
+            const file = document.getElementById('imageInput').files[0];
+            const quality = document.getElementById('quality').value / 100;
+            
+            if (file) {
+                compressImage(file, quality);
+            } else {
+                alert('पहले कोई इमेज चुनें');
+            }
+        });
+        
+        // इमेज कंप्रेस करने का फंक्शन
+        function compressImage(file, quality) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const img = new Image();
+                img.src = e.target.result;
+                
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // कैनवास साइज सेट करें
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    
+                    // इमेज ड्रॉ करें
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    // कंप्रेस्ड इमेज प्रिव्यू दिखाएं
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    document.getElementById('imagePreview').src = compressedDataUrl;
+                    document.getElementById('imagePreview').style.display = 'block';
+                    
+                    // साइज इन्फो दिखाएं
+                    document.getElementById('originalSize').textContent = (file.size / 1024).toFixed(2);
+                    document.getElementById('newSize').textContent = (compressedDataUrl.length / 1024).toFixed(2);
+                    
+                    // रिजल्ट दिखाएं
+                    document.getElementById('result').style.display = 'block';
+                    
+                    // डाउनलोड बटन के लिए
+                    document.getElementById('downloadBtn').onclick = function() {
+                        const link = document.createElement('a');
+                        link.href = compressedDataUrl;
+                        link.download = 'compressed_' + file.name;
+                        link.click();
+                    };
+                }
+            }
+            
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
