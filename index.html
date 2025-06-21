@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Compressor</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .upload-box { border: 2px dashed #ff2d55; padding: 30px; text-align: center; margin: 20px 0; border-radius: 10px; }
+        #preview { max-width: 100%; display: none; margin-top: 20px; }
+        button { background: #ff2d55; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Image Compressor Tool</h1>
+    <div class="upload-box">
+        <p>इमेज यहां ड्रॉप करें या क्लिक करें</p>
+        <input type="file" id="imageInput" accept="image/*">
+    </div>
+    <div id="controls" style="display:none;">
+        <label>क्वालिटी: <input type="range" id="quality" min="10" max="100" value="70"> <span id="qualityValue">70%</span></label>
+        <button id="compressBtn">कंप्रेस करें</button>
+    </div>
+    <img id="preview" src="" alt="कंप्रेस्ड इमेज">
+    <button id="downloadBtn" style="display:none;">डाउनलोड करें</button>
+
+    <script>
+        // इमेज सेलेक्ट करने पर
+        document.getElementById('imageInput').addEventListener('change', function() {
+            document.getElementById('controls').style.display = 'block';
+        });
+
+        // कंप्रेस बटन
+        document.getElementById('compressBtn').addEventListener('click', function() {
+            const file = document.getElementById('imageInput').files[0];
+            const quality = document.getElementById('quality').value / 100;
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        
+                        const compressed = canvas.toDataURL('image/jpeg', quality);
+                        document.getElementById('preview').src = compressed;
+                        document.getElementById('preview').style.display = 'block';
+                        document.getElementById('downloadBtn').style.display = 'inline-block';
+                        
+                        document.getElementById('downloadBtn').onclick = function() {
+                            const link = document.createElement('a');
+                            link.href = compressed;
+                            link.download = 'compressed_' + file.name;
+                            link.click();
+                        };
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // क्वालिटी स्लाइडर
+        document.getElementById('quality').addEventListener('input', function() {
+            document.getElementById('qualityValue').textContent = this.value + '%';
+        });
+    </script>
+</body>
+</html>
